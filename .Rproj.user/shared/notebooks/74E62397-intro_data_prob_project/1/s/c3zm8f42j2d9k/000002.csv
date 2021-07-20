@@ -1,0 +1,3 @@
+"0","ggplot(question1, aes(x = factor(exerany2), y = percentage *100, fill = factor(genhlth))) +"
+"0","  geom_bar(stat=""identity"", width = 0.5) +"
+"0","  labs(x = ""Do You Exercise?"", y = ""Percentage"", fill = ""General Health"")"

@@ -1,0 +1,8 @@
+"0","question3 <- brfss2013 %>%"
+"0","  select(X_smoker3, educa) %>%"
+"0","  filter(!is.na(X_smoker3), !is.na(educa)) %>%"
+"0","  group_by(X_smoker3, educa) %>%"
+"0","  dplyr::summarise(count = n()) %>%"
+"0","  dplyr::mutate(percentage = count/sum(count))"
+"2","`summarise()` has grouped output by 'X_smoker3'. You can override using the `.groups` argument.
+"

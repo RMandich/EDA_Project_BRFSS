@@ -1,0 +1,181 @@
+---
+title: "Exploring the BRFSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+## Raphael Mandich | 07/19/2021
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(plyr)
+library(dplyr)
+```
+
+### Load data
+
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+
+
+* * *
+
+## Part 1: Data
+
+The data set we are working with in this project is called The Behavioral Risk Factor Surveillance System (BRFSS). BRFSS is an ongoing surveillance system designed to measure behavioral risk factors for the non-institutionalized adult population (18 years of age and older) residing in the US. It contains state-specific data on preventive health practices and risk behaviors that are linked to chronic diseases, injuries, and preventable infectious diseases that affect the adult population. The Data was collected through landline telephone - and cellular telephone - based surveys, with randomly selected individuals, therefore can be considered an observational study and is generalizable the adult population in the US. 
+
+For this project, we will consider the data obtained in the year of 2013. The objective of the study is to propose 3 Research questions and subsequently try to answer them, using exploratory data analysis techniques on the observations contained in the data set. 
+
+* * *
+
+## Part 2: Research questions
+
+**Research question 1:**
+
+As the first question, we are interested in exploring the relationship between physical exercise and general health condition. We'll use the following variables: 
+
+exerany2: Exercise In Past 30 Days
+
+genhlth: General Health
+
+
+**Research question 2:**
+
+Next, we would like to explore the relationship between a person's weight and the prevalence of high cholesterol, grouping by biological sex. The variables used will be:
+
+X_bmi5cat: Computed Body Mass Index Categories
+
+toldhi2: Ever Told Blood Cholesterol High
+
+sex: Respondents Sex
+
+**Research question 3:**
+
+For the last question, we are interested in the relationship between smoking and education level. For that, we'll use these variables:
+
+
+X_smoker3: Computed Smoking Status
+
+educa: Education Level
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+**Research question 1:**
+
+We'll start our analysis looking at the relationship between physical exercise and general health condition. For that, we'll use the variables "exerany2", which contains information on whether a person performed any form of physical exercise in the past 30 days and "genhlth", which has information on a subject's general health.
+
+```{r}
+question1 <- brfss2013 %>%
+  select(exerany2, genhlth) %>%
+  filter(!is.na(exerany2), !is.na(genhlth)) %>%
+  group_by(exerany2, genhlth) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = count/sum(count))
+
+
+```
+
+Now that we have our data selected, we'll plot it into two stacked bar charts to better visualize the relation between the variables
+
+```{r}
+ggplot(question1, aes(x = factor(exerany2), y = percentage *100, fill = factor(genhlth))) +
+  geom_bar(stat="identity", width = 0.5) +
+  labs(x = "Do You Exercise?", y = "Percentage", fill = "General Health")
+```
+
+
+As we can see, only about 13% of the people who regularly exercise feel like their general health condition in Poor/Fair, while between those who do not exercise, this number is above 30%. Similarly, more than 50% of the people who exercise have a Very Good/Excellent health condition, while only about 30% of the people who do not exercise feel that way. Therefore, we can conclude that there is a positive correlation between exercising and a better general health condition.
+
+
+
+
+**Research question 2:**
+
+Continuing our analysis, we'll look at the relationship between a person's weight and the prevalence of high cholesterol. For that, we'll use the variables "_bmi5cat", which contains the body mass category the person fits in (Underweight, Normal weight, Overweight, or Obese) and the variable "toldhi2", which holds information on whether or not the person has ever been told that their cholesterol is high.
+
+```{r}
+question2 <- brfss2013 %>%
+  select(X_bmi5cat, toldhi2, sex) %>%
+  filter(!is.na(X_bmi5cat), !is.na(toldhi2), !is.na(sex)) %>%
+  group_by(X_bmi5cat, sex, toldhi2) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = count/sum(count))
+```
+
+
+Employing the same method, we can visualize the relations with bar charts grouped by biological sex:
+
+```{r}
+ggplot(question2, aes(x = factor(X_bmi5cat), y = percentage *100, fill = toldhi2)) +
+  geom_bar(stat="identity", width = 0.5) +
+  labs(x = "Body Mass Index", y = "Percentage", fill = "High Cholesterol")+
+  facet_grid(. ~  sex)
+```
+
+
+
+There is a clear tendency of growth in the presence of high cholesterol levels as the person's weight increases. Among underweight and normal weight people, a bit more than 30% have high cholesterol levels, while for obese people, the number gets above 50%. The numbers are pretty similar in regards to biological sex, so that variable does not seem to impact cholesterol level.
+
+
+
+**Research question 3:**
+
+
+For our third and final research question, we are interested in the relationship between smoking and education level. We'll use the variables "_smoker3", which contains the  computed smoking status, from Never Smoked to Current Smoker, and "educa", which holds the subject's education level.
+
+Since both variables have quite long factor names, we'll start by reducing the lenght of the levels. This change is purely aesthetic, so that the labels don't overlap in our graph.
+
+```{r}
+
+smoker3 <- levels(brfss2013$X_smoker3)
+
+smoker3_short <- c('Smokes Everyday', 'Smokes Somedays', 'Former Smoker', 'Never Smoked')
+
+brfss2013$X_smoker3 <- mapvalues(brfss2013$X_smoker3,
+                            from = smoker3,
+                            to = smoker3_short)
+
+#######################################
+
+educa1 <- levels(brfss2013$educa)
+
+educa1_short <- c('Never attended school', 'Elementary', 'Incomplete HS', 'HS Graduate', 'Incomplete College', 'College Graduate')
+
+brfss2013$educa <- mapvalues(brfss2013$educa,
+                            from = educa1,
+                            to = educa1_short)
+
+```
+
+With that done, we'll query the variables just as we did for the previous two questions.
+
+```{r}
+question3 <- brfss2013 %>%
+  select(X_smoker3, educa) %>%
+  filter(!is.na(X_smoker3), !is.na(educa)) %>%
+  group_by(X_smoker3, educa) %>%
+  dplyr::summarise(count = n()) %>%
+  dplyr::mutate(percentage = count/sum(count))
+```
+Finally, we'll plot our results in a stacked bar chart.
+
+
+```{r}
+ggplot(question3, aes(x = factor(X_smoker3), y = percentage *100, fill = educa)) +
+  geom_bar(stat="identity", width = 0.5) +
+  labs(x = "Prevalence of smoking", y = "Percentage", fill = "Education level")
+```
+
+
+
+We can see that the prevalence of smoking clearly decreases as the education level rises. Among people who have never touched a cigarette, more than 40% are college graduates, while only 15% of the people who smoke everyday have completed college.  

@@ -1,0 +1,8 @@
+"0","question1 <- brfss2013 %>%"
+"0","  select(exerany2, genhlth) %>%"
+"0","  filter(!is.na(exerany2), !is.na(genhlth)) %>%"
+"0","  group_by(exerany2, genhlth) %>%"
+"0","  summarise(count = n()) %>%"
+"0","  mutate(percentage = count/sum(count))"
+"2","`summarise()` has grouped output by 'exerany2'. You can override using the `.groups` argument.
+"

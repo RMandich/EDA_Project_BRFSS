@@ -1,0 +1,4 @@
+"0","ggplot(question2, aes(x = factor(X_bmi5cat), y = percentage *100, fill = toldhi2)) +"
+"0","  geom_bar(stat=""identity"", width = 0.5) +"
+"0","  labs(x = ""Body Mass Index"", y = ""Percentage"", fill = ""High Cholesterol"")+"
+"0","  facet_grid(. ~  sex)"
